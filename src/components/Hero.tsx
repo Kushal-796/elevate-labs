@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown, Rocket } from 'lucide-react'
 import { Button } from './ui/button'
+import { gsap } from 'gsap'
+import { TextPlugin } from 'gsap/TextPlugin'
+
+// Register GSAP plugins
+gsap.registerPlugin(TextPlugin)
 
 const ParticleField: React.FC = () => {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number }>>([])
@@ -45,26 +50,71 @@ const ParticleField: React.FC = () => {
   )
 }
 
-const TypewriterText: React.FC<{ text: string; delay?: number }> = ({ text, delay = 0 }) => {
-  const [displayedText, setDisplayedText] = useState('')
+const FastAnimatedText: React.FC<{ text: string; delay?: number }> = ({ text, delay = 0 }) => {
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      let index = 0
-      const interval = setInterval(() => {
-        setDisplayedText(text.slice(0, index + 1))
-        index++
-        if (index >= text.length) {
-          clearInterval(interval)
-        }
-      }, 100)
-      return () => clearInterval(interval)
+      setIsVisible(true)
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [text, delay])
+  }, [delay])
 
-  return <span>{displayedText}<span className="animate-pulse">|</span></span>
+  const words = text.split(' ')
+
+  return (
+    <div className="relative inline-block">
+      {words.map((word, wordIndex) => (
+        <span
+          key={wordIndex}
+          className="inline-block mr-3 relative"
+        >
+          {word.split('').map((letter, letterIndex) => (
+            <span
+              key={letterIndex}
+              className={`inline-block transition-all duration-700 ease-out transform ${
+                isVisible 
+                  ? 'translate-y-0 opacity-100 rotate-0 scale-100' 
+                  : 'translate-y-8 opacity-0 -rotate-12 scale-95'
+              }`}
+              style={{
+                transitionDelay: `${(wordIndex * 50) + (letterIndex * 30)}ms`,
+                background: letterIndex % 2 === 0 
+                  ? 'linear-gradient(45deg, #60a5fa, #a78bfa, #f472b6)' 
+                  : 'linear-gradient(45deg, #34d399, #60a5fa, #a78bfa)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                animation: isVisible ? `float-${letterIndex % 3} 3s ease-in-out infinite` : 'none'
+              }}
+            >
+              {letter}
+            </span>
+          ))}
+        </span>
+      ))}
+      <span className="animate-pulse ml-2 text-blue-400">|</span>
+      
+      {/* CSS Animations */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes float-0 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-5px) rotate(1deg); }
+        }
+        @keyframes float-1 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-8px) rotate(-1deg); }
+        }
+        @keyframes float-2 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-3px) rotate(0.5deg); }
+        }
+        `
+      }} />
+    </div>
+  )
 }
 
 export const Hero: React.FC = () => {
@@ -101,8 +151,8 @@ export const Hero: React.FC = () => {
             Elevate Labs
           </motion.h1>
 
-          <div className="text-xl md:text-2xl text-gray-300 mb-8 h-16">
-            <TypewriterText 
+          <div className="text-xl md:text-2xl text-gray-300 mb-8 min-h-[4rem]">
+            <FastAnimatedText 
               text="We craft stunning digital experiences that launch your brand into orbit" 
               delay={1000}
             />

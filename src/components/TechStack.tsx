@@ -1,149 +1,229 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
-import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
+import type { Variants } from 'framer-motion'
 
 const technologies = [
   {
+    id: 1,
     name: "React",
     description: "Modern JavaScript library for building user interfaces with component-based architecture",
     category: "Frontend",
-    color: "from-blue-400 to-cyan-400"
+    color: "from-blue-400 to-cyan-400",
+    icon: "⚛️",
+    bgColor: "bg-blue-500"
   },
   {
+    id: 2,
     name: "TypeScript",
     description: "Strongly typed programming language that builds on JavaScript for better development experience",
     category: "Language",
-    color: "from-blue-500 to-indigo-500"
+    color: "from-blue-500 to-indigo-500",
+    icon: "📘",
+    bgColor: "bg-blue-600"
   },
   {
+    id: 3,
     name: "Next.js",
     description: "Full-stack React framework with server-side rendering and optimal performance",
     category: "Framework",
-    color: "from-gray-800 to-gray-600"
+    color: "from-gray-800 to-gray-600",
+    icon: "▲",
+    bgColor: "bg-gray-800"
   },
   {
+    id: 4,
     name: "Node.js",
     description: "JavaScript runtime built on Chrome's V8 engine for scalable backend applications",
     category: "Backend",
-    color: "from-green-500 to-emerald-500"
+    color: "from-green-500 to-emerald-500",
+    icon: "🟢",
+    bgColor: "bg-green-500"
   },
   {
+    id: 5,
     name: "Tailwind CSS",
     description: "Utility-first CSS framework for rapidly building custom user interfaces",
     category: "Styling",
-    color: "from-cyan-400 to-teal-400"
+    color: "from-cyan-400 to-teal-400",
+    icon: "🎨",
+    bgColor: "bg-cyan-500"
   },
   {
+    id: 6,
     name: "Framer Motion",
     description: "Production-ready motion library for React with powerful animation capabilities",
     category: "Animation",
-    color: "from-purple-500 to-pink-500"
+    color: "from-purple-500 to-pink-500",
+    icon: "✨",
+    bgColor: "bg-purple-500"
   },
   {
+    id: 7,
     name: "Supabase",
     description: "Open source Firebase alternative with real-time database and authentication",
     category: "Backend",
-    color: "from-green-400 to-cyan-400"
+    color: "from-green-400 to-cyan-400",
+    icon: "🗄️",
+    bgColor: "bg-green-400"
   },
   {
-    name: "Vercel",
-    description: "Platform for frontend frameworks with global CDN and edge computing",
-    category: "Deployment",
-    color: "from-gray-900 to-black"
-  },
-  {
-    name: "Prisma",
-    description: "Modern database toolkit with type-safe database access and migrations",
-    category: "Database",
-    color: "from-indigo-500 to-purple-500"
-  },
-  {
-    name: "Docker",
-    description: "Containerization platform for consistent deployment across environments",
-    category: "DevOps",
-    color: "from-blue-600 to-cyan-600"
-  },
-  {
-    name: "GraphQL",
-    description: "Query language and runtime for APIs with efficient data fetching",
-    category: "API",
-    color: "from-pink-500 to-rose-500"
-  },
-  {
+    id: 8,
     name: "AWS",
     description: "Comprehensive cloud computing platform with scalable infrastructure services",
     category: "Cloud",
-    color: "from-orange-500 to-yellow-500"
+    color: "from-orange-500 to-yellow-500",
+    icon: "☁️",
+    bgColor: "bg-orange-500"
   }
 ]
 
-export const TechStack: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(true)
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  })
+interface NotificationCardProps {
+  tech: typeof technologies[0]
+  index: number
+  total: number
+  onRemove: () => void
+}
 
-  // Auto-play functionality
-  useEffect(() => {
-    if (!isPlaying || !inView) return
+const NotificationCard: React.FC<NotificationCardProps> = ({ tech, index, total, onRemove }) => {
+  const isTop = index === 0
+  const stackOffset = Math.min(index * 8, 32) // Max offset of 32px
+  const stackScale = 1 - (index * 0.02) // Slight scale decrease for depth
+  const stackOpacity = 1 - (index * 0.15) // Fade effect for depth
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % technologies.length)
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [isPlaying, inView])
-
-  const getVisibleItems = () => {
-    const isMobile = window.innerWidth < 768
-    const itemsToShow = isMobile ? 1 : 3
-    const items = []
-    
-    for (let i = 0; i < itemsToShow; i++) {
-      const index = (currentIndex + i) % technologies.length
-      items.push({
-        ...technologies[index],
-        isCenter: i === Math.floor(itemsToShow / 2)
-      })
-    }
-    
-    return items
-  }
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % technologies.length)
-  }
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + technologies.length) % technologies.length)
-  }
-
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying)
+  const cardVariants: Variants = {
+    initial: {
+      scale: 0.8,
+      opacity: 0,
+      y: -50,
+    },
+    animate: {
+      scale: stackScale,
+      opacity: stackOpacity,
+      y: stackOffset,
+      transition: {
+        type: "spring",
+        damping: 25,
+        stiffness: 300,
+        delay: index * 0.1
+      }
+    },
+    exit: {
+      scale: 0.8,
+      opacity: 0,
+      x: index % 2 === 0 ? 300 : -300,
+      rotate: index % 2 === 0 ? 10 : -10,
+      transition: {
+        duration: 0.3
+      }
+    },
+    hover: isTop ? {
+      scale: stackScale * 1.02,
+      y: stackOffset - 5,
+      transition: {
+        duration: 0.2
+      }
+    } : {}
   }
 
   return (
-    <section className="py-20 bg-slate-800 relative overflow-hidden">
-      {/* Background animation */}
-      <motion.div
-        animate={{
-          background: [
-            "linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)",
-            "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%)",
-            "linear-gradient(225deg, rgba(236, 72, 153, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
-          ]
-        }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute inset-0"
-      />
+    <motion.div
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      whileHover={isTop ? "hover" : undefined}
+      className={`absolute inset-x-0 cursor-pointer ${isTop ? 'z-50' : ''}`}
+      style={{ zIndex: total - index }}
+      onClick={isTop ? onRemove : undefined}
+    >
+      <div className="mx-auto max-w-sm">
+        <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+          {/* Header */}
+          <div className={`${tech.bgColor} px-6 py-4 flex items-center gap-4`}>
+            <div className="text-2xl">{tech.icon}</div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-lg">{tech.name}</h3>
+              <p className="text-white/80 text-sm">{tech.category}</p>
+            </div>
+            <div className="text-white/60 text-xs">now</div>
+          </div>
+          
+          {/* Content */}
+          <div className="p-6">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              {tech.description}
+            </p>
+            
+            {/* Action buttons */}
+            <div className="flex gap-3 mt-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-medium"
+              >
+                Learn More
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600"
+              >
+                Dismiss
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
 
-      <div className="container mx-auto px-4 relative" ref={ref}>
+export const TechStack: React.FC = () => {
+  const [currentStack, setCurrentStack] = useState(technologies.slice(0, 4))
+  const [removedCount, setRemovedCount] = useState(0)
+
+  const removeTopCard = () => {
+    if (currentStack.length > 0) {
+      const newStack = currentStack.slice(1)
+      setCurrentStack(newStack)
+      setRemovedCount(prev => prev + 1)
+      
+      // Add a new card from the original array if available
+      const nextIndex = (removedCount + 4) % technologies.length
+      setTimeout(() => {
+        setCurrentStack(prev => [...prev, technologies[nextIndex]])
+      }, 300)
+    }
+  }
+
+  const resetStack = () => {
+    setCurrentStack(technologies.slice(0, 4))
+    setRemovedCount(0)
+  }
+
+  // Auto-cycle through cards
+  useEffect(() => {
+    const interval = setInterval(() => {
+      removeTopCard()
+    }, 4000) // Change card every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [currentStack, removedCount])
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ amount: 0.3 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
@@ -151,114 +231,72 @@ export const TechStack: React.FC = () => {
             Our Tech Stack
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            Cutting-edge technologies and tools that power our exceptional digital solutions
+            Cutting-edge technologies and tools that power our exceptional digital solutions. 
+            Tap the top card to see the next technology!
           </p>
-
+          
           {/* Controls */}
-          <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="flex items-center justify-center gap-4">
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={prevSlide}
-              className="p-3 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={removeTopCard}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
             >
-              <ChevronLeft className="h-6 w-6 text-white" />
+              Next Tech
             </motion.button>
-
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={togglePlayPause}
-              className="p-3 bg-purple-600 hover:bg-purple-700 rounded-full transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={resetStack}
+              className="px-6 py-3 border border-gray-400 text-gray-300 rounded-full font-semibold hover:border-gray-300 hover:text-white transition-all duration-300"
             >
-              {isPlaying ? (
-                <Pause className="h-6 w-6 text-white" />
-              ) : (
-                <Play className="h-6 w-6 text-white ml-1" />
-              )}
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={nextSlide}
-              className="p-3 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors"
-            >
-              <ChevronRight className="h-6 w-6 text-white" />
+              Reset Stack
             </motion.button>
           </div>
+        </motion.div>
 
-          {/* Progress indicators */}
-          <div className="flex justify-center gap-2 mb-8">
-            {technologies.map((_, index) => (
+        {/* iOS Notification Stack */}
+        <div className="flex justify-center items-center min-h-[500px]">
+          <div className="relative w-full max-w-sm h-96">
+            <AnimatePresence>
+              {currentStack.map((tech, index) => (
+                <NotificationCard
+                  key={tech.id}
+                  tech={tech}
+                  index={index}
+                  total={currentStack.length}
+                  onRemove={removeTopCard}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Stack indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ amount: 0.3 }}
+          className="text-center mt-8"
+        >
+          <p className="text-gray-400 text-sm mb-4">
+            {currentStack.length} technologies in stack
+          </p>
+          <div className="flex justify-center gap-2">
+            {currentStack.map((_, index) => (
               <motion.div
                 key={index}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex ? 'w-8 bg-purple-400' : 'w-2 bg-gray-600'
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className={`w-3 h-3 rounded-full ${
+                  index === 0 ? 'bg-blue-400' : 'bg-gray-600'
                 }`}
-                whileHover={{ scale: 1.2 }}
               />
             ))}
           </div>
         </motion.div>
-
-        {/* Technology Cards */}
-        <div className="flex justify-center items-center min-h-[400px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl"
-            >
-              {getVisibleItems().map((tech, index) => (
-                <motion.div
-                  key={`${tech.name}-${currentIndex}`}
-                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                  animate={{ 
-                    opacity: 1, 
-                    y: 0, 
-                    scale: tech.isCenter ? 1.1 : 1 
-                  }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className={`relative group ${
-                    tech.isCenter ? 'z-10' : 'md:scale-90 md:opacity-75'
-                  }`}
-                >
-                  <div className="bg-slate-700/50 backdrop-blur-sm border border-purple-500/20 rounded-2xl p-8 h-full hover:border-purple-400/40 transition-all duration-300">
-                    {/* Gradient background */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${tech.color} opacity-10 rounded-2xl transition-opacity group-hover:opacity-20`} />
-                    
-                    <div className="relative z-10 text-center">
-                      <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        className={`w-16 h-16 bg-gradient-to-br ${tech.color} rounded-2xl flex items-center justify-center mb-6 mx-auto`}
-                      >
-                        <span className="text-2xl font-bold text-white">
-                          {tech.name.charAt(0)}
-                        </span>
-                      </motion.div>
-
-                      <h3 className="text-2xl font-bold text-white mb-2">
-                        {tech.name}
-                      </h3>
-                      
-                      <p className="text-purple-300 text-sm mb-4 font-semibold">
-                        {tech.category}
-                      </p>
-                      
-                      <p className="text-gray-300 leading-relaxed">
-                        {tech.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        </div>
       </div>
     </section>
   )
